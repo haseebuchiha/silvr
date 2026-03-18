@@ -506,13 +506,6 @@ function renderDiffValue(path: string, value: unknown, _uiHints: ConfigUiHints):
   return truncateValue(value);
 }
 
-type ThemeOption = { id: ThemeName; label: string; description: string; icon: TemplateResult };
-const THEME_OPTIONS: ThemeOption[] = [
-  { id: "claw", label: "Claw", description: "Chroma family", icon: icons.zap },
-  { id: "knot", label: "Knot", description: "Knot family", icon: icons.link },
-  { id: "dash", label: "Dash", description: "Field family", icon: icons.barChart },
-];
-
 function renderAppearanceSection(props: ConfigProps) {
   const MODE_OPTIONS: Array<{
     id: ThemeMode;
@@ -527,37 +520,6 @@ function renderAppearanceSection(props: ConfigProps) {
 
   return html`
     <div class="settings-appearance">
-      <div class="settings-appearance__section">
-        <h3 class="settings-appearance__heading">Theme</h3>
-        <p class="settings-appearance__hint">Choose a theme family.</p>
-        <div class="settings-theme-grid">
-          ${THEME_OPTIONS.map(
-            (opt) => html`
-              <button
-                class="settings-theme-card ${opt.id === props.theme ? "settings-theme-card--active" : ""}"
-                title=${opt.description}
-                @click=${(e: Event) => {
-                  if (opt.id !== props.theme) {
-                    const context: ThemeTransitionContext = {
-                      element: (e.currentTarget as HTMLElement) ?? undefined,
-                    };
-                    props.setTheme(opt.id, context);
-                  }
-                }}
-              >
-                <span class="settings-theme-card__icon" aria-hidden="true">${opt.icon}</span>
-                <span class="settings-theme-card__label">${opt.label}</span>
-                ${
-                  opt.id === props.theme
-                    ? html`<span class="settings-theme-card__check" aria-hidden="true">${icons.check}</span>`
-                    : nothing
-                }
-              </button>
-            `,
-          )}
-        </div>
-      </div>
-
       <div class="settings-appearance__section">
         <h3 class="settings-appearance__heading">Mode</h3>
         <p class="settings-appearance__hint">Choose light or dark mode for the selected theme.</p>
