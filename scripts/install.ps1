@@ -24,17 +24,17 @@ $NC = "`e[0m"                     # No Color
 function Write-Host {
     param([string]$Message, [string]$Level = "info")
     $msg = switch ($Level) {
-        "success" { "$SUCCESS✓$NC $Message" }
-        "warn" { "$WARN!$NC $Message" }
-        "error" { "$ERROR✗$NC $Message" }
-        default { "$MUTED·$NC $Message" }
+        "success" { "$SUCCESS[OK]$NC $Message" }
+        "warn" { "$WARN[!]$NC $Message" }
+        "error" { "$ERROR[X]$NC $Message" }
+        default { "$MUTED>$NC $Message" }
     }
     Microsoft.PowerShell.Host\Write-Host $msg
 }
 
 function Write-Banner {
     Write-Host ""
-    Write-Host "${ACCENT}  🦞 OpenClaw Installer$NC" -Level info
+    Write-Host "${ACCENT}  * OpenClaw Installer$NC" -Level info
     Write-Host "${MUTED}  All your chats, one OpenClaw.$NC" -Level info
     Write-Host ""
 }
@@ -323,7 +323,7 @@ function Main {
     }
     
     Write-Host ""
-    Write-Host "🦞 OpenClaw installed successfully!" -Level success
+    Write-Host "* OpenClaw installed successfully!" -Level success
 }
 
 Main
