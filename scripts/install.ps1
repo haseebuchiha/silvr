@@ -1,11 +1,11 @@
-# OpenClaw Installer for Windows (PowerShell)
-# Usage: iwr -useb https://openclaw.ai/install.ps1 | iex
-# Or: & ([scriptblock]::Create((iwr -useb https://openclaw.ai/install.ps1))) -NoOnboard
+# Silvr Installer for Windows (PowerShell)
+# Usage: iwr -useb https://raw.githubusercontent.com/haseebuchiha/silvr/main/scripts/install.ps1 | iex
+# Or: & ([scriptblock]::Create((iwr -useb https://raw.githubusercontent.com/haseebuchiha/silvr/main/scripts/install.ps1))) -NoOnboard
 
 param(
     [string]$InstallMethod = "npm",
     [string]$Tag = "latest",
-    [string]$GitDir = "$env:USERPROFILE\openclaw",
+    [string]$GitDir = "$env:USERPROFILE\silvr",
     [switch]$NoOnboard,
     [switch]$NoGitUpdate,
     [switch]$DryRun
@@ -13,29 +13,31 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Colors
-$ACCENT = "`e[38;2;255;77;77m"    # coral-bright
-$SUCCESS = "`e[38;2;0;229;204m"    # cyan-bright
-$WARN = "`e[38;2;255;176;32m"     # amber
-$ERROR = "`e[38;2;230;57;70m"     # coral-mid
-$MUTED = "`e[38;2;90;100;128m"    # text-muted
-$NC = "`e[0m"                     # No Color
+# Colors — monochrome silvr palette
+# Use [char]27 for ESC since backtick-e only works in PS 6+
+$ESC = [char]27
+$C_ACCENT = "$ESC[38;2;255;255;255m"
+$C_SUCCESS = "$ESC[38;2;74;222;128m"
+$C_WARN = "$ESC[38;2;255;176;32m"
+$C_ERR = "$ESC[38;2;230;57;70m"
+$C_MUTED = "$ESC[38;2;90;100;128m"
+$C_NC = "$ESC[0m"
 
-function Write-Host {
+function Write-Status {
     param([string]$Message, [string]$Level = "info")
     $msg = switch ($Level) {
-        "success" { "$SUCCESS✓$NC $Message" }
-        "warn" { "$WARN!$NC $Message" }
-        "error" { "$ERROR✗$NC $Message" }
-        default { "$MUTED·$NC $Message" }
+        "success" { "${C_SUCCESS}OK${C_NC} $Message" }
+        "warn" { "${C_WARN}!${C_NC} $Message" }
+        "error" { "${C_ERR}X${C_NC} $Message" }
+        default { "${C_MUTED}>${C_NC} $Message" }
     }
-    Microsoft.PowerShell.Host\Write-Host $msg
+    Write-Host $msg
 }
 
 function Write-Banner {
     Write-Host ""
-    Write-Host "${ACCENT}  🦞 OpenClaw Installer$NC" -Level info
-    Write-Host "${MUTED}  All your chats, one OpenClaw.$NC" -Level info
+    Write-Status "${C_ACCENT}  * Silvr Installer${C_NC}"
+    Write-Status "${C_MUTED}  All your chats, one gateway.${C_NC}"
     Write-Host ""
 }
 
@@ -56,23 +58,23 @@ function Test-Admin {
 function Ensure-ExecutionPolicy {
     $status = Get-ExecutionPolicyStatus
     if ($status.Blocked) {
-        Write-Host "PowerShell execution policy is set to: $($status.Policy)" -Level warn
-        Write-Host "This prevents scripts like npm.ps1 from running." -Level warn
+        Write-Status "PowerShell execution policy is set to: $($status.Policy)" -Level warn
+        Write-Status "This prevents scripts like npm.ps1 from running." -Level warn
         Write-Host ""
-        
+
         # Try to set execution policy for current process
         try {
             Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -ErrorAction Stop
-            Write-Host "Set execution policy to RemoteSigned for current process" -Level success
+            Write-Status "Set execution policy to RemoteSigned for current process" -Level success
             return $true
         } catch {
-            Write-Host "Could not automatically set execution policy" -Level error
+            Write-Status "Could not automatically set execution policy" -Level error
             Write-Host ""
-            Write-Host "To fix this, run:" -Level info
-            Write-Host "  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process" -Level info
+            Write-Status "To fix this, run:"
+            Write-Status "  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process"
             Write-Host ""
-            Write-Host "Or run PowerShell as Administrator and execute:" -Level info
-            Write-Host "  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine" -Level info
+            Write-Status "Or run PowerShell as Administrator and execute:"
+            Write-Status "  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine"
             return $false
         }
     }
@@ -100,51 +102,51 @@ function Get-NpmVersion {
 }
 
 function Install-Node {
-    Write-Host "Node.js not found" -Level info
-    Write-Host "Installing Node.js..." -Level info
-    
+    Write-Status "Node.js not found"
+    Write-Status "Installing Node.js..."
+
     # Try winget first
     if (Get-Command winget -ErrorAction SilentlyContinue) {
-        Write-Host "  Using winget..." -Level info
+        Write-Status "  Using winget..."
         try {
             winget install OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements 2>&1 | Out-Null
             # Refresh PATH
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-            Write-Host "  Node.js installed via winget" -Level success
+            Write-Status "  Node.js installed via winget" -Level success
             return $true
         } catch {
-            Write-Host "  Winget install failed: $_" -Level warn
+            Write-Status "  Winget install failed: $_" -Level warn
         }
     }
-    
+
     # Try chocolatey
     if (Get-Command choco -ErrorAction SilentlyContinue) {
-        Write-Host "  Using chocolatey..." -Level info
+        Write-Status "  Using chocolatey..."
         try {
             choco install nodejs-lts -y 2>&1 | Out-Null
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-            Write-Host "  Node.js installed via chocolatey" -Level success
+            Write-Status "  Node.js installed via chocolatey" -Level success
             return $true
         } catch {
-            Write-Host "  Chocolatey install failed: $_" -Level warn
+            Write-Status "  Chocolatey install failed: $_" -Level warn
         }
     }
-    
+
     # Try scoop
     if (Get-Command scoop -ErrorAction SilentlyContinue) {
-        Write-Host "  Using scoop..." -Level info
+        Write-Status "  Using scoop..."
         try {
             scoop install nodejs-lts 2>&1 | Out-Null
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-            Write-Host "  Node.js installed via scoop" -Level success
+            Write-Status "  Node.js installed via scoop" -Level success
             return $true
         } catch {
-            Write-Host "  Scoop install failed: $_" -Level warn
+            Write-Status "  Scoop install failed: $_" -Level warn
         }
     }
-    
-    Write-Host "Could not install Node.js automatically" -Level error
-    Write-Host "Please install Node.js 22+ manually from: https://nodejs.org" -Level info
+
+    Write-Status "Could not install Node.js automatically" -Level error
+    Write-Status "Please install Node.js 22+ manually from: https://nodejs.org"
     return $false
 }
 
@@ -153,10 +155,10 @@ function Ensure-Node {
     if ($nodeVersion) {
         $major = [int]($nodeVersion -split '\.')[0]
         if ($major -ge 22) {
-            Write-Host "Node.js v$nodeVersion found" -Level success
+            Write-Status "Node.js v$nodeVersion found" -Level success
             return $true
         }
-        Write-Host "Node.js v$nodeVersion found, but need v22+" -Level warn
+        Write-Status "Node.js v$nodeVersion found, but need v22+" -Level warn
     }
     return Install-Node
 }
@@ -172,143 +174,142 @@ function Get-GitVersion {
 }
 
 function Install-Git {
-    Write-Host "Git not found" -Level info
-    
+    Write-Status "Git not found"
+
     if (Get-Command winget -ErrorAction SilentlyContinue) {
-        Write-Host "  Installing Git via winget..." -Level info
+        Write-Status "  Installing Git via winget..."
         try {
             winget install Git.Git --accept-package-agreements --accept-source-agreements 2>&1 | Out-Null
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-            Write-Host "  Git installed" -Level success
+            Write-Status "  Git installed" -Level success
             return $true
         } catch {
-            Write-Host "  Winget install failed" -Level warn
+            Write-Status "  Winget install failed" -Level warn
         }
     }
-    
-    Write-Host "Please install Git for Windows from: https://git-scm.com" -Level error
+
+    Write-Status "Please install Git for Windows from: https://git-scm.com" -Level error
     return $false
 }
 
 function Ensure-Git {
     $gitVersion = Get-GitVersion
     if ($gitVersion) {
-        Write-Host "$gitVersion found" -Level success
+        Write-Status "$gitVersion found" -Level success
         return $true
     }
     return Install-Git
 }
 
-function Install-OpenClawNpm {
+function Install-SilvrNpm {
     param([string]$Version = "latest")
-    
-    Write-Host "Installing OpenClaw (openclaw@$Version)..." -Level info
-    
+
+    Write-Status "Installing Silvr (@haseebuchiha/silvr@$Version)..."
+
     try {
-        # Use -ExecutionPolicy Bypass to handle restricted execution policy
-        npm install -g openclaw@$Version --no-fund --no-audit 2>&1
-        Write-Host "OpenClaw installed" -Level success
+        npm install -g @haseebuchiha/silvr@$Version --no-fund --no-audit 2>&1
+        Write-Status "Silvr installed" -Level success
         return $true
     } catch {
-        Write-Host "npm install failed: $_" -Level error
+        Write-Status "npm install failed: $_" -Level error
         return $false
     }
 }
 
-function Install-OpenClawGit {
+function Install-SilvrGit {
     param([string]$RepoDir, [switch]$Update)
-    
-    Write-Host "Installing OpenClaw from git..." -Level info
-    
+
+    Write-Status "Installing Silvr from git..."
+
     if (!(Test-Path $RepoDir)) {
-        Write-Host "  Cloning repository..." -Level info
-        git clone https://github.com/openclaw/openclaw.git $RepoDir 2>&1
+        Write-Status "  Cloning repository..."
+        git clone https://github.com/haseebuchiha/silvr.git $RepoDir 2>&1
     } elseif ($Update) {
-        Write-Host "  Updating repository..." -Level info
+        Write-Status "  Updating repository..."
         git -C $RepoDir pull --rebase 2>&1
     }
-    
+
     # Install pnpm if not present
     if (!(Get-Command pnpm -ErrorAction SilentlyContinue)) {
-        Write-Host "  Installing pnpm..." -Level info
+        Write-Status "  Installing pnpm..."
         npm install -g pnpm 2>&1
     }
-    
+
     # Install dependencies
-    Write-Host "  Installing dependencies..." -Level info
+    Write-Status "  Installing dependencies..."
     pnpm install --dir $RepoDir 2>&1
-    
+
     # Build
-    Write-Host "  Building..." -Level info
+    Write-Status "  Building..."
     pnpm --dir $RepoDir build 2>&1
-    
-    # Create wrapper
+
+    # Create wrapper — CLI command stays `openclaw`
     $wrapperDir = "$env:USERPROFILE\.local\bin"
     if (!(Test-Path $wrapperDir)) {
         New-Item -ItemType Directory -Path $wrapperDir -Force | Out-Null
     }
-    
+
     @"
 @echo off
-node "%~dp0..\openclaw\dist\entry.js" %*
+node "%~dp0..\silvr\dist\entry.js" %*
 "@ | Out-File -FilePath "$wrapperDir\openclaw.cmd" -Encoding ASCII -Force
-    
-    Write-Host "OpenClaw installed" -Level success
+
+    Write-Status "Silvr installed" -Level success
     return $true
 }
 
 function Add-ToPath {
     param([string]$Path)
-    
+
     $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
     if ($currentPath -notlike "*$Path*") {
         [Environment]::SetEnvironmentVariable("Path", "$currentPath;$Path", "User")
-        Write-Host "Added $Path to user PATH" -Level info
+        Write-Status "Added $Path to user PATH"
     }
 }
 
 # Main
 function Main {
     Write-Banner
-    
-    Write-Host "Windows detected" -Level success
-    
+
+    Write-Status "Windows detected" -Level success
+
     # Check and handle execution policy FIRST, before any npm calls
     if (!(Ensure-ExecutionPolicy)) {
         Write-Host ""
-        Write-Host "Installation cannot continue due to execution policy restrictions" -Level error
+        Write-Status "Installation cannot continue due to execution policy restrictions" -Level error
         exit 1
     }
-    
+
     if (!(Ensure-Node)) {
         exit 1
     }
-    
+
     if ($InstallMethod -eq "git") {
         if (!(Ensure-Git)) {
             exit 1
         }
-        
+
         if ($DryRun) {
-            Write-Host "[DRY RUN] Would install OpenClaw from git to $GitDir" -Level info
+            Write-Status "[DRY RUN] Would install Silvr from git to $GitDir"
         } else {
-            Install-OpenClawGit -RepoDir $GitDir -Update:(-not $NoGitUpdate)
+            Install-SilvrGit -RepoDir $GitDir -Update:(-not $NoGitUpdate)
         }
     } else {
         # npm method
         if (!(Ensure-Git)) {
-            Write-Host "Git is required for npm installs. Please install Git and try again." -Level warn
+            Write-Status "Git is required for npm installs. Please install Git and try again." -Level warn
         }
-        
+
         if ($DryRun) {
-            Write-Host "[DRY RUN] Would install OpenClaw via npm (tag: $Tag)" -Level info
+            Write-Status "[DRY RUN] Would install Silvr via npm (tag: $Tag)"
         } else {
-            if (!(Install-OpenClawNpm -Version $Tag)) {
+            if (!(Install-SilvrNpm -Version $Tag)) {
                 exit 1
             }
         }
     }
-    
+
     # Try to add npm global bin to PATH
     try {
         $npmPrefix = npm config get prefix 2>$null
@@ -316,14 +317,14 @@ function Main {
             Add-ToPath -Path "$npmPrefix"
         }
     } catch { }
-    
+
     if (!$NoOnboard -and !$DryRun) {
         Write-Host ""
-        Write-Host "Run 'openclaw onboard' to complete setup" -Level info
+        Write-Status "Run 'openclaw onboard' to complete setup"
     }
-    
+
     Write-Host ""
-    Write-Host "🦞 OpenClaw installed successfully!" -Level success
+    Write-Status "* Silvr installed successfully!" -Level success
 }
 
 Main
