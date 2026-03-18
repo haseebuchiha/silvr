@@ -214,6 +214,9 @@
     },
     "./cli-entry": "./openclaw.mjs"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "android:assemble": "cd apps/android && ./gradlew :app:assembleDebug",
     "android:bundle:release": "bun apps/android/scripts/build-release-aab.ts",
