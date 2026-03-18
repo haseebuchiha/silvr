@@ -206,14 +206,18 @@ function Install-SilvrNpm {
 
     Write-Status "Installing Silvr (@haseebuchiha/silvr@$Version)..."
 
-    try {
-        npm install -g @haseebuchiha/silvr@$Version --no-fund --no-audit 2>&1
-        Write-Status "Silvr installed" -Level success
-        return $true
-    } catch {
-        Write-Status "npm install failed: $_" -Level error
+    $oldPref = $ErrorActionPreference
+    $ErrorActionPreference = "SilentlyContinue"
+    npm install -g @haseebuchiha/silvr@$Version --no-fund --no-audit 2>&1
+    $exitCode = $LASTEXITCODE
+    $ErrorActionPreference = $oldPref
+
+    if ($exitCode -ne 0) {
+        Write-Status "npm install failed (exit code $exitCode)" -Level error
         return $false
     }
+    Write-Status "Silvr installed" -Level success
+    return $true
 }
 
 function Install-SilvrGit {
