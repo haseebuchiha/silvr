@@ -207,8 +207,8 @@ function Install-SilvrNpm {
     Write-Status "Installing Silvr (@haseebuchiha/silvr@$Version)..."
 
     $oldPref = $ErrorActionPreference
-    $ErrorActionPreference = "SilentlyContinue"
-    npm install -g @haseebuchiha/silvr@$Version --no-fund --no-audit 2>&1
+    $ErrorActionPreference = "Continue"
+    & cmd /c "npm install -g @haseebuchiha/silvr@$Version --no-fund --no-audit 2>&1"
     $exitCode = $LASTEXITCODE
     $ErrorActionPreference = $oldPref
 
