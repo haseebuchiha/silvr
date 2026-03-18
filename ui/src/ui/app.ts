@@ -127,7 +127,7 @@ export class OpenClawApp extends LitElement {
   @state() tab: Tab = "chat";
   @state() onboarding = resolveOnboardingMode();
   @state() connected = false;
-  @state() theme: ThemeName = this.settings.theme ?? "claw";
+  @state() theme: ThemeName = this.settings.theme ?? "silvr";
   @state() themeMode: ThemeMode = this.settings.themeMode ?? "system";
   @state() themeResolved: ResolvedTheme = "dark";
   @state() themeOrder: ThemeName[] = this.buildThemeOrder(this.theme);
