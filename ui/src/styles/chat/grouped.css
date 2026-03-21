@@ -316,7 +316,7 @@ img.chat-avatar {
 }
 
 .chat-group.user .chat-bubble:hover {
-  background: rgba(255, 77, 77, 0.15);
+  background: var(--accent-subtle);
 }
 
 /* Streaming animation */
@@ -330,7 +330,7 @@ img.chat-avatar {
     border-color: var(--border);
   }
   50% {
-    border-color: var(--accent);
+    border-color: var(--text-strong);
   }
 }
 

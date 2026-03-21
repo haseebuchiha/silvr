@@ -1,4 +1,12 @@
 <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="60" cy="60" r="60" fill="#000000"/>
-  <path d="M60.5 24C49.2 24 40 30.8 40 40.5c0 8.2 6.5 13.5 17 16.5l7 2c7.5 2.2 10.5 5 10.5 9.5 0 5.8-5.5 10-13.5 10-8.5 0-14.5-4.5-15.5-11.5H36c1 11 10 18 24.5 18C72.8 95 82 87.8 82 78c0-8.5-6.5-14-17.5-17l-7-2C50.5 57 48 54.5 48 50c0-5.5 5-9.5 12.5-9.5 7 0 12 4 13 10h9.5C82 39.2 73 24 60.5 24z" fill="#ffffff"/>
+  <style>
+    .bg { fill: #000000; }
+    .letter { fill: #ffffff; }
+    @media (prefers-color-scheme: light) {
+      .bg { fill: #ffffff; }
+      .letter { fill: #000000; }
+    }
+  </style>
+  <rect class="bg" width="120" height="120" rx="26"/>
+  <text class="letter" x="60" y="88" text-anchor="middle" font-family="'DM Serif Display', Georgia, 'Times New Roman', serif" font-size="82" font-weight="400" letter-spacing="-2">S</text>
 </svg>
