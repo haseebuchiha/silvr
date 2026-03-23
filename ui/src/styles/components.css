@@ -2290,8 +2290,8 @@
 }
 
 :root[data-theme-mode="light"] .chat-line.user .chat-bubble {
-  border-color: rgba(234, 88, 12, 0.2);
-  background: rgba(251, 146, 60, 0.12);
+  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+  background: var(--accent-subtle);
 }
 
 .chat-line.assistant .chat-bubble {
